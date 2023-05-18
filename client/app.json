@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Wellness Hub",
+    "slug": "wellnessapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "wellnessapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "Allow this app to access your calendar",
+        "NSRemindersUsageDescription": "Allow this app to access your reminders"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "permissions": [
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ],
+      "package": "com.wellnessmobile.wellnessapp",
+      "versionCode": 3
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "description": "Capstone health & wellness client",
+    "owner": "wellness-mobile"
+  }
+}

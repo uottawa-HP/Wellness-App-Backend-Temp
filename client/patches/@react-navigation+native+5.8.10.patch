@@ -1,0 +1,90 @@
+diff --git a/node_modules/@react-navigation/native/src/types.tsx b/node_modules/@react-navigation/native/src/types.tsx
+index e56a5dc..0974f04 100644
+--- a/node_modules/@react-navigation/native/src/types.tsx
++++ b/node_modules/@react-navigation/native/src/types.tsx
+@@ -66,7 +66,11 @@ export type LinkingOptions = {
+    * }
+    * ```
+    */
+-  getInitialURL?: () => Promise<string | null | undefined>;
++  getInitialURL?: () =>
++    | string
++    | null
++    | undefined
++    | Promise<string | null | undefined>;
+   /**
+    * Custom function to get subscribe to URL updates.
+    * Uses `Linking.addEventListener('url', callback)` by default.
+diff --git a/node_modules/@react-navigation/native/src/useLinking.native.tsx b/node_modules/@react-navigation/native/src/useLinking.native.tsx
+index 8a3b281..d786009 100644
+--- a/node_modules/@react-navigation/native/src/useLinking.native.tsx
++++ b/node_modules/@react-navigation/native/src/useLinking.native.tsx
+@@ -8,6 +8,8 @@ import {
+ import type { LinkingOptions } from './types';
+ import escapeStringRegexp from 'escape-string-regexp';
+ 
++type ResultState = ReturnType<typeof getStateFromPathDefault>;
++
+ let isUsingLinking = false;
+ 
+ export default function useLinking(
+@@ -30,7 +32,8 @@ export default function useLinking(
+ 
+       Linking.addEventListener('url', callback);
+ 
+-      return () => Linking.removeEventListener('url', callback);
++      // return () => Linking.removeEventListener('url', callback);
++      return () => Linking.removeAllListeners('url')
+     },
+     getStateFromPath = getStateFromPathDefault,
+   }: LinkingOptions
+@@ -93,19 +96,39 @@ export default function useLinking(
+     return undefined;
+   }, []);
+ 
+-  const getInitialState = React.useCallback(async () => {
+-    if (!enabledRef.current) {
+-      return undefined;
+-    }
++  const getInitialState = React.useCallback(() => {
++    let state: ResultState | undefined;
+ 
+-    const url = await getInitialURLRef.current();
+-    const path = url ? extractPathFromURL(url) : null;
+ 
+-    if (path) {
+-      return getStateFromPathRef.current(path, configRef.current);
+-    } else {
+-      return undefined;
++    if (enabledRef.current) {
++      const url = getInitialURLRef.current();
++      if (url != null && typeof url !== 'string') {
++        return url.then((url) => {
++          const path = url ? extractPathFromURL(url) : null;
++
++          return path
++            ? getStateFromPathRef.current(path, configRef.current)
++            : undefined;
++        });
++      }
++
++      const path = url ? extractPathFromURL(url) : null;
++
++      state = path
++        ? getStateFromPathRef.current(path, configRef.current)
++        : undefined;
+     }
++    const thenable = {
++      then(onfulfilled?: (state: ResultState | undefined) => void) {
++        return Promise.resolve(onfulfilled ? onfulfilled(state) : state);
++      },
++      catch() {
++        return thenable;
++      },
++    };
++
++    return thenable as PromiseLike<ResultState | undefined>;
++
+   }, [extractPathFromURL]);
+ 
+   React.useEffect(() => {
